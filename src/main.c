@@ -2,6 +2,11 @@
 #include <3ds.h>
 #include <stdio.h>
 
+void checkKey(char key[])
+{
+	printf("\x1b[25;25H%s", key);
+}
+
 int main(int argc, char **argv)
 {
 	//Matrix containing the name of each key. Useful for printing when a key is pressed
@@ -42,45 +47,19 @@ int main(int argc, char **argv)
 		if (kDown & KEY_START) break; // break in order to return to hbmenu
 
 		//Do the keys printing only if keys have changed
-		if ((kDown != kDownOld && kDown == 64) || (kHeld == 64 && kHeld != kHeldOld))
+		if (kDown != kDownOld || kHeld != kHeldOld)
 		{
 			//Clear console
 			consoleClear();
-
 			// Line must be rewritten because we cleared the whole console
 			printf("\x1b[1;1HPress Start to exit.");
 
-			printf("\x1b[25;25HCIMA");
-		}
-		if ((kDown != kDownOld && kDown == 32) || (kHeld == 32 && kHeld != kHeldOld))
-		{
-			//Clear console
-			consoleClear();
-
-			// Line must be rewritten because we cleared the whole console
-			printf("\x1b[1;1HPress Start to exit.");
-
-			printf("\x1b[25;25HESQUERDA");
-		}
-		if ((kDown != kDownOld && kDown == 16) || (kHeld == 16 && kHeld != kHeldOld))
-		{
-			//Clear console
-			consoleClear();
-
-			// Line must be rewritten because we cleared the whole console
-			printf("\x1b[1;1HPress Start to exit.");
-
-			printf("\x1b[25;25HDIREITA");
-		}
-		if ((kDown != kDownOld && kDown == 128) || (kHeld == 128 && kHeld != kHeldOld))
-		{
-			//Clear console
-			consoleClear();
-
-			// Line must be rewritten because we cleared the whole console
-			printf("\x1b[1;1HPress Start to exit.");
-
-			printf("\x1b[25;25HBAIXO");
+			int i;
+			for (i = 0; i < 32; i++)
+			{
+				if (kDown & BIT(i)) checkKey(keysNames[i]);
+				if (kHeld & BIT(i)) checkKey(keysNames[i]);
+			}
 		}
 
 		//Set keys old values for the next frame
