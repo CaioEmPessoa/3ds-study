@@ -9,14 +9,16 @@
 #define SCREEN_WIDTH  400
 #define SCREEN_HEIGHT 240
 
-static int playerY = -25;
-static int playerX = -25;
+static int sqrSize = 15;
+
+static int playerX;
+static int playerY;
 
 int convertPos(char type, int pos)
 {
-	if (type == 'w') return (SCREEN_WIDTH/2)+pos, 
-	else if (type == 'h') return (SCREEN_HEIGHT/2)+pos,
-	else return 
+	if (type == 'w') return (SCREEN_WIDTH/2)+pos;
+	else if (type == 'h') return (SCREEN_HEIGHT/2)+pos;
+	else return 0; // TODO if screen_heigh <= pos // pos = screen_height
 }
 
 void movePlayer(char nsew)
@@ -38,7 +40,6 @@ void movePlayer(char nsew)
 	default:
 		break;
 	}
-
 }
 
 void checkKey(char key[])
@@ -76,6 +77,10 @@ int main(int argc, char* argv[])
 	C2D_Prepare();
 	consoleInit(GFX_BOTTOM, NULL);
 	
+	// Initialize player position
+	playerY = sqrSize / 2;
+	playerX = sqrSize / 2;
+
 	// Create screens
 	C3D_RenderTarget* top = C2D_CreateScreenTarget(GFX_TOP, GFX_LEFT);
 
@@ -107,7 +112,12 @@ int main(int argc, char* argv[])
 		C2D_SceneBegin(top);
 
 		// draw objects
-		C2D_DrawRectangle(convertPos('w', playerX), convertPos('h', playerY), 0, 50, 50, clrGreen, clrGreen, clrGreen, clrGreen);
+		C2D_DrawRectangle(
+			convertPos('w', playerX), 
+			convertPos('h', playerY), 
+			0, sqrSize, sqrSize, 
+			clrGreen, clrGreen, clrGreen, clrGreen
+		);
 		C2D_DrawTriangle(50 / 2, SCREEN_HEIGHT - 50, clrWhite,
 			0,  SCREEN_HEIGHT, clrWhite,
 			50, SCREEN_HEIGHT, clrWhite, 0);
@@ -115,7 +125,7 @@ int main(int argc, char* argv[])
 		// end frame
 		C3D_FrameEnd(0);
 
-		//Scan all the inputs.
+		//Scan all the inputs.y
 		hidScanInput();
 
 		u32 kDown = hidKeysDown();
