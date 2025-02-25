@@ -45,11 +45,17 @@ void movePlayer(char nsew)
 	}
 }
 
+// DRAWING FUNCTIONS
 void addSquare()
 {
 	sqrsAmm += 1;
 	sqrsCoord[sqrsAmm][0] = playerX;
 	sqrsCoord[sqrsAmm][1] = playerY;
+}
+void eraseAll()
+{
+	sqrsAmm = 0;
+	memset(sqrsCoord, 0, sizeof(sqrsCoord));
 }
 
 void checkKey(char key[])
@@ -79,6 +85,10 @@ void checkKey(char key[])
 	else if(strcmp(key, "KEY_A") == 0)
 	{
 		addSquare();
+	}
+	else if(strcmp(key, "KEY_B") == 0)
+	{
+		eraseAll();
 	}
 }
 
