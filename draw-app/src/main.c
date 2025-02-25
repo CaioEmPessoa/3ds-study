@@ -16,7 +16,7 @@ static int playerY;
 
 static int setColor = 2; // current color set of square and color that will be drawn
 
-static int sqrsAmm = 0;
+static int sqrsAmm = -1;
 static int sqrsInfo[9999][3] = {};
 
 int convertPos(char type, int pos)
@@ -156,18 +156,13 @@ int main(int argc, char* argv[])
 		C2D_SceneBegin(top);
 
 		// draw objects
-		C2D_DrawRectangle(
-			convertPos('w', playerX), 
-			convertPos('h', playerY), 
-			0, sqrSize, sqrSize, 
-			svdColors[setColor], svdColors[setColor], svdColors[setColor], svdColors[setColor]
-		);
 		C2D_DrawTriangle(50 / 2, SCREEN_HEIGHT - 50, svdColors[3],
 			0,  SCREEN_HEIGHT, clrWhite,
-			50, SCREEN_HEIGHT, clrWhite, 0);
+			50, SCREEN_HEIGHT, clrWhite, 0
+		);
 
-
-		for (int i = sqrsAmm; i > 0; i--)
+		// draw saved squares
+		for (int i = 0; i < sqrsAmm - 1; i++)
 		{
 			C2D_DrawRectangle(
 				convertPos('w', sqrsInfo[i][0]),
@@ -177,7 +172,15 @@ int main(int argc, char* argv[])
 				svdColors[sqrsInfo[i][2]], svdColors[sqrsInfo[i][2]]
 			);
 		}
-		
+
+		// draw cursor
+		C2D_DrawRectangle(
+			convertPos('w', playerX), 
+			convertPos('h', playerY), 
+			0, sqrSize, sqrSize, 
+			svdColors[setColor], svdColors[setColor], svdColors[setColor], svdColors[setColor]
+		);
+
 		// end frame
 		C3D_FrameEnd(0);
 
