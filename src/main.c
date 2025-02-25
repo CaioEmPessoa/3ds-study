@@ -14,6 +14,9 @@ static int sqrSize = 15;
 static int playerX;
 static int playerY;
 
+static int sqrsAmm = 0;
+static int sqrsCoord[9999][2] = {};
+
 int convertPos(char type, int pos)
 {
 	if (type == 'w') return (SCREEN_WIDTH/2)+pos;
@@ -42,6 +45,13 @@ void movePlayer(char nsew)
 	}
 }
 
+void addSquare()
+{
+	sqrsAmm += 1;
+	sqrsCoord[sqrsAmm][0] = playerX;
+	sqrsCoord[sqrsAmm][1] = playerY;
+}
+
 void checkKey(char key[])
 {
 	printf("\x1b[25;20H%s", key);
@@ -65,6 +75,10 @@ void checkKey(char key[])
 	{
 		printf("%s\x1b[20;20H", "ESQUERDA");
 		movePlayer('W');
+	}
+	else if(strcmp(key, "KEY_A") == 0)
+	{
+		addSquare();
 	}
 }
 
@@ -122,6 +136,17 @@ int main(int argc, char* argv[])
 			0,  SCREEN_HEIGHT, clrWhite,
 			50, SCREEN_HEIGHT, clrWhite, 0);
 
+
+		for (int i = sqrsAmm; i > 0; i--)
+		{
+			C2D_DrawRectangle(
+				convertPos('w', sqrsCoord[i][0]),
+				convertPos('h', sqrsCoord[i][1]),
+				0, sqrSize, sqrSize, 
+				clrGreen, clrGreen, clrGreen, clrGreen
+			);
+		}
+		
 		// end frame
 		C3D_FrameEnd(0);
 
