@@ -14,8 +14,10 @@ static int sqrSize = 15;
 static int playerX;
 static int playerY;
 
+static int setColor = 2; // current color set of square and color that will be drawn
+
 static int sqrsAmm = 0;
-static int sqrsCoord[9999][2] = {};
+static int sqrsInfo[9999][3] = {};
 
 int convertPos(char type, int pos)
 {
@@ -49,16 +51,28 @@ void movePlayer(char nsew)
 void addSquare()
 {
 	sqrsAmm += 1;
-	sqrsCoord[sqrsAmm][0] = playerX;
-	sqrsCoord[sqrsAmm][1] = playerY;
+	sqrsInfo[sqrsAmm][0] = playerX; // x position
+	sqrsInfo[sqrsAmm][1] = playerY; // y position
+	sqrsInfo[sqrsAmm][2] = setColor; // square color
+}
+void changeColor(int dir)
+{
+	if (dir == 1 && setColor < 4)
+	{
+		setColor += 1;
+	}
+	else if (dir == 0 && setColor > 0)
+	{
+		setColor -= 1;
+	}
 }
 void eraseAll()
 {
 	sqrsAmm = 0;
-	memset(sqrsCoord, 0, sizeof(sqrsCoord));
+	memset(sqrsInfo, 0, sizeof(sqrsInfo));
 }
 
-void checkKey(char key[])
+void checkFrameKey(char key[]) // check in hold every frame
 {
 	printf("\x1b[25;20H%s", key);
 
@@ -82,14 +96,14 @@ void checkKey(char key[])
 		printf("%s\x1b[20;20H", "ESQUERDA");
 		movePlayer('W');
 	}
-	else if(strcmp(key, "KEY_A") == 0)
-	{
-		addSquare();
-	}
-	else if(strcmp(key, "KEY_B") == 0)
-	{
-		eraseAll();
-	}
+	else if(strcmp(key, "KEY_A") == 0) addSquare();
+}
+
+void checkSingleKey(char key[]) // check on diff click
+{
+	if(strcmp(key, "KEY_B") == 0) eraseAll();
+	else if (strcmp(key, "KEY_R") == 0) changeColor(1);
+	else if (strcmp(key, "KEY_L") == 0)changeColor(0);
 }
 
 int main(int argc, char* argv[]) 
@@ -119,9 +133,15 @@ int main(int argc, char* argv[])
 		"KEY_CPAD_RIGHT", "KEY_CPAD_LEFT", "KEY_CPAD_UP", "KEY_CPAD_DOWN"
 	};
 
+	u32 clrRed   = C2D_Color32(0xFF, 0x00, 0x00, 0xFF);
+	u32 clrBlue  = C2D_Color32(0x00, 0x00, 0xFF, 0xFF);
 	u32 clrGreen = C2D_Color32(0x00, 0xFF, 0x00, 0xFF);
 	u32 clrWhite = C2D_Color32(0xFF, 0xFF, 0xFF, 0xFF);
 	u32 clrClear = C2D_Color32(0xFF, 0xD8, 0xB0, 0x68);
+
+	u32 svdColors[4] = {
+		clrRed, clrBlue, clrGreen, clrWhite
+	};
 
 	u32 kDownOld = 0, kHeldOld = 0;
 
@@ -140,9 +160,9 @@ int main(int argc, char* argv[])
 			convertPos('w', playerX), 
 			convertPos('h', playerY), 
 			0, sqrSize, sqrSize, 
-			clrGreen, clrGreen, clrGreen, clrGreen
+			svdColors[setColor], svdColors[setColor], svdColors[setColor], svdColors[setColor]
 		);
-		C2D_DrawTriangle(50 / 2, SCREEN_HEIGHT - 50, clrWhite,
+		C2D_DrawTriangle(50 / 2, SCREEN_HEIGHT - 50, svdColors[3],
 			0,  SCREEN_HEIGHT, clrWhite,
 			50, SCREEN_HEIGHT, clrWhite, 0);
 
@@ -150,10 +170,11 @@ int main(int argc, char* argv[])
 		for (int i = sqrsAmm; i > 0; i--)
 		{
 			C2D_DrawRectangle(
-				convertPos('w', sqrsCoord[i][0]),
-				convertPos('h', sqrsCoord[i][1]),
+				convertPos('w', sqrsInfo[i][0]),
+				convertPos('h', sqrsInfo[i][1]),
 				0, sqrSize, sqrSize, 
-				clrGreen, clrGreen, clrGreen, clrGreen
+				svdColors[sqrsInfo[i][2]], svdColors[sqrsInfo[i][2]], // colors
+				svdColors[sqrsInfo[i][2]], svdColors[sqrsInfo[i][2]]
 			);
 		}
 		
@@ -167,7 +188,7 @@ int main(int argc, char* argv[])
 		u32 kHeld = hidKeysHeld();
 
 		if (kDown & KEY_START) break;
-
+		
 		if (kDown != kDownOld || kHeld == kHeldOld)
 		{
 			//Clear console
@@ -178,8 +199,8 @@ int main(int argc, char* argv[])
 			int i;
 			for (i = 0; i < 32; i++)
 			{
-				if (kDown & BIT(i)) checkKey(keysNames[i]);
-				if (kHeld & BIT(i)) checkKey(keysNames[i]);
+				if (kDown & BIT(i)) checkSingleKey(keysNames[i]);
+				if (kHeld & BIT(i)) checkFrameKey(keysNames[i]);
 			}
 		}
 
