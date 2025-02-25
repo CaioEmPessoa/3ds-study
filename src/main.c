@@ -1,15 +1,34 @@
 
-#include <3ds.h>
+#include <citro2d.h>
+
+#include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <3ds.h>
+
+#define SCREEN_WIDTH  400
+#define SCREEN_HEIGHT 240
+
+static int playerY = -25;
+static int playerX = -25;
 
 void checkKey(char key[])
 {
-	printf("\x1b[25;25H%s", key);
+	printf("\x1b[25;20H%s", key);
 }
 
-int main(int argc, char **argv)
+int main(int argc, char* argv[]) 
 {
-	//Matrix containing the name of each key. Useful for printing when a key is pressed
+	// Initialize services
+	C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
+	gfxInitDefault();
+	C2D_Init(C2D_DEFAULT_MAX_OBJECTS);
+	C2D_Prepare();
+	consoleInit(GFX_BOTTOM, NULL);
+	
+	// Create screens
+	C3D_RenderTarget* top = C2D_CreateScreenTarget(GFX_TOP, GFX_LEFT);
+
 	char keysNames[32][32] = {
 		"KEY_A", "KEY_B", "KEY_SELECT", "KEY_START",
 		"KEY_DRIGHT", "KEY_DLEFT", "KEY_DUP", "KEY_DDOWN",
@@ -21,33 +40,40 @@ int main(int argc, char **argv)
 		"KEY_CPAD_RIGHT", "KEY_CPAD_LEFT", "KEY_CPAD_UP", "KEY_CPAD_DOWN"
 	};
 
-	// Initialize services
-	gfxInitDefault();
+	u32 clrGreen = C2D_Color32(0x00, 0xFF, 0x00, 0xFF);
+	u32 clrWhite = C2D_Color32(0xFF, 0xFF, 0xFF, 0xFF);
+	u32 clrClear = C2D_Color32(0xFF, 0xD8, 0xB0, 0x68);
 
-	//Initialize console on top screen. Using NULL as the second argument tells the console library to use the internal console structure as current one
-	consoleInit(GFX_TOP, NULL);
-
-	u32 kDownOld = 0, kHeldOld = 0, kUpOld = 0; //In these variables there will be information about keys detected in the previous frame
+	u32 kDownOld = 0, kHeldOld = 0;
 
 	printf("\x1b[1;1HPress Start to exit.");
 
 	// Main loop
 	while (aptMainLoop())
 	{
-		//Scan all the inputs. This should be done once for each frame
+		// Render the scene
+		C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
+		C2D_TargetClear(top, clrClear);
+		C2D_SceneBegin(top);
+
+		// draw objects
+		C2D_DrawRectangle((SCREEN_WIDTH/2)+playerX, (SCREEN_HEIGHT/2)+playerY, 0, 50, 50, clrGreen, clrGreen, clrGreen, clrGreen);
+		C2D_DrawTriangle(50 / 2, SCREEN_HEIGHT - 50, clrWhite,
+			0,  SCREEN_HEIGHT, clrWhite,
+			50, SCREEN_HEIGHT, clrWhite, 0);
+
+		// end frame
+		C3D_FrameEnd(0);
+
+		//Scan all the inputs.
 		hidScanInput();
 
-		//hidKeysDown returns information about which buttons have been just pressed (and they weren't in the previous frame)
 		u32 kDown = hidKeysDown();
-		//hidKeysHeld returns information about which buttons have are held down in this frame
 		u32 kHeld = hidKeysHeld();
-		//hidKeysUp returns information about which buttons have been just released
-		u32 kUp = hidKeysUp();
 
-		if (kDown & KEY_START) break; // break in order to return to hbmenu
+		if (kDown & KEY_START) break;
 
-		//Do the keys printing only if keys have changed
-		if (kDown != kDownOld || kHeld != kHeldOld)
+		if (kDown != kDownOld || kHeld == kHeldOld)
 		{
 			//Clear console
 			consoleClear();
@@ -65,17 +91,11 @@ int main(int argc, char **argv)
 		//Set keys old values for the next frame
 		kDownOld = kDown;
 		kHeldOld = kHeld;
-		kUpOld = kUp;
-
-		// Flush and swap framebuffers
-		gfxFlushBuffers();
-		gfxSwapBuffers();
-
-		//Wait for VBlank
-		gspWaitForVBlank();
 	}
 
 	// Exit services
+	C2D_Fini();
+	C3D_Fini();
 	gfxExit();
 	return 0;
 }
