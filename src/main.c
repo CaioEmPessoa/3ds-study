@@ -12,9 +12,52 @@
 static int playerY = -25;
 static int playerX = -25;
 
+void movePlayer(char nsew)
+{
+	switch (nsew)
+	{
+	case 'N':
+		playerY -= 1;
+		break;
+	case 'S':
+		playerY += 1;
+		break;
+	case 'E':
+		playerX += 1;
+		break;
+	case 'W':
+		playerX -= 1;
+		break;
+	default:
+		break;
+	}
+
+}
+
 void checkKey(char key[])
 {
 	printf("\x1b[25;20H%s", key);
+
+	if (strcmp(key, "KEY_DUP") == 0 || strcmp(key, "KEY_CPAD_UP") == 0)
+	{
+		printf("%s\x1b[20;20H", "CIMA");
+		movePlayer('N');
+	}
+	else if (strcmp(key, "KEY_DDOWN") == 0 || strcmp(key, "KEY_CPAD_DOWN") == 0)
+	{
+		printf("%s\x1b[20;20H", "BAIXO");
+		movePlayer('S');
+	}
+	else if (strcmp(key, "KEY_DRIGHT") == 0 || strcmp(key, "KEY_CPAD_RIGHT") == 0)
+	{
+		printf("%s\x1b[20;20H", "DIREITA");
+		movePlayer('E');
+	}
+	else if (strcmp(key, "KEY_DLEFT") == 0 || strcmp(key, "KEY_CPAD_LEFT") == 0)
+	{
+		printf("%s\x1b[20;20H", "ESQUERDA");
+		movePlayer('W');
+	}
 }
 
 int main(int argc, char* argv[]) 
