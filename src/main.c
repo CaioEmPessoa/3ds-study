@@ -12,6 +12,13 @@
 static int playerY = -25;
 static int playerX = -25;
 
+int convertPos(char type, int pos)
+{
+	if (type == 'w') return (SCREEN_WIDTH/2)+pos, 
+	else if (type == 'h') return (SCREEN_HEIGHT/2)+pos,
+	else return 
+}
+
 void movePlayer(char nsew)
 {
 	switch (nsew)
@@ -100,7 +107,7 @@ int main(int argc, char* argv[])
 		C2D_SceneBegin(top);
 
 		// draw objects
-		C2D_DrawRectangle((SCREEN_WIDTH/2)+playerX, (SCREEN_HEIGHT/2)+playerY, 0, 50, 50, clrGreen, clrGreen, clrGreen, clrGreen);
+		C2D_DrawRectangle(convertPos('w', playerX), convertPos('h', playerY), 0, 50, 50, clrGreen, clrGreen, clrGreen, clrGreen);
 		C2D_DrawTriangle(50 / 2, SCREEN_HEIGHT - 50, clrWhite,
 			0,  SCREEN_HEIGHT, clrWhite,
 			50, SCREEN_HEIGHT, clrWhite, 0);
