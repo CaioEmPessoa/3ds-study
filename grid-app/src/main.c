@@ -11,14 +11,15 @@
 
 static int sqrSize = 20;
 
-static int playerTileX;
-static int playerTileY;
+static int playerTileX = 0.5; // player positioning, starts on the middle
+static int playerTileY = 0.5;
 
-static int maxTileX = 5;
+static int maxTileX = 5; // set tile boundaries
 static int maxTileY = 5;
 
-static int setColor = 2; // current color set of square and color that will be drawn
+static int setColor = 2; // current color set of player and color that will be drawn
 
+// for drawing
 static int sqrsAmm = -1;
 static int sqrsInfo[9999][3] = {};
 
@@ -124,9 +125,6 @@ int main(int argc, char* argv[])
 	consoleInit(GFX_BOTTOM, NULL);
 	
 	// INITIAL VARIABLES VALUES
-	// Initialize player position on center
-	playerTileX = 0.5;
-	playerTileX = 0.5;
 
 	int backgroundSizeX = (maxTileX*sqrSize)*2;
 	int backgroundSizeY = (maxTileY*sqrSize)*2;
