@@ -31,16 +31,16 @@ void movePlayer(char nsew)
 	switch (nsew)
 	{
 	case 'N':
-		playerY -= 1;
+		playerY -= 2;
 		break;
 	case 'S':
-		playerY += 1;
+		playerY += 2;
 		break;
 	case 'E':
-		playerX += 1;
+		playerX += 2;
 		break;
 	case 'W':
-		playerX -= 1;
+		playerX -= 2;
 		break;
 	default:
 		break;
@@ -113,7 +113,6 @@ int main(int argc, char* argv[])
 	gfxInitDefault();
 	C2D_Init(C2D_DEFAULT_MAX_OBJECTS);
 	C2D_Prepare();
-	consoleInit(GFX_BOTTOM, NULL);
 	
 	// Initialize player position
 	playerY = sqrSize / 2;
@@ -121,6 +120,7 @@ int main(int argc, char* argv[])
 
 	// Create screens
 	C3D_RenderTarget* top = C2D_CreateScreenTarget(GFX_TOP, GFX_LEFT);
+	C3D_RenderTarget* bot = C2D_CreateScreenTarget(GFX_BOTTOM, GFX_LEFT);
 
 	char keysNames[32][32] = {
 		"KEY_A", "KEY_B", "KEY_SELECT", "KEY_START",
@@ -153,7 +153,9 @@ int main(int argc, char* argv[])
 		// Render the scene
 		C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
 		C2D_TargetClear(top, clrClear);
+		C2D_TargetClear(bot, clrClear);
 		C2D_SceneBegin(top);
+		
 
 		// draw objects
 		C2D_DrawTriangle(50 / 2, SCREEN_HEIGHT - 50, svdColors[3],
@@ -172,6 +174,8 @@ int main(int argc, char* argv[])
 				svdColors[sqrsInfo[i][2]], svdColors[sqrsInfo[i][2]]
 			);
 		}
+
+		C2D_SceneBegin(bot);
 
 		// draw cursor
 		C2D_DrawRectangle(
