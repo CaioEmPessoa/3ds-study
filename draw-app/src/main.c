@@ -12,7 +12,8 @@
 #define BOT_SCREEN_WIDTH  320
 #define BOT_SCREEN_HEIGHT 240
 
-static int sqrSize = 15;
+static int sqrSizes[3] = {10, 15, 20};
+static int sqrSize;
 
 static int playerX;
 static int playerY;
@@ -142,11 +143,14 @@ int main(int argc, char* argv[])
 	C2D_Init(C2D_DEFAULT_MAX_OBJECTS);
 	C2D_Prepare();
 	
-	// Initialize player position
+	// -------| INITIAL VARIABLES |------
+	sqrSize = sqrSizes[1];
+
+	// INITIAL PLAYER POSITION
 	playerY = sqrSize / 2;
 	playerX = sqrSize / 2;
 
-	// ARRAY WITH ALL KEY NAMES
+	// ARRAY WITH ALL KEY
 	char keysNames[32][32] = {
 		"KEY_A", "KEY_B", "KEY_SELECT", "KEY_START",
 		"KEY_DRIGHT", "KEY_DLEFT", "KEY_DUP", "KEY_DDOWN",
