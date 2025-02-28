@@ -32,12 +32,10 @@ static int sqrsInfo[9999][3] = {};
 
 int convertPos(char type, int pos)
 {
-	if (slctScreen = 't') int w = TOP_SCREEN_HEIGHT, h = TOP_SCREEN_HEIGHT;
-	else if (slctScreen = 'b') int w = BOT_SCREEN_HEIGHT; int h = BOT_SCREEN_HEIGHT;
+	int offset = (slctScreen == 't') ? ((type == 'w') ? TOP_SCREEN_WIDTH / 2 : TOP_SCREEN_HEIGHT / 2) : 
+										((type == 'w') ? BOT_SCREEN_WIDTH / 2 : BOT_SCREEN_HEIGHT / 2);
 
-	if (type == 'w') return (w/2)+pos;
-	else if (type == 'h') return (h/2)+pos;
-	else return 0;
+	return offset + pos;
 }
 
 void movePlayer(char nsew)
