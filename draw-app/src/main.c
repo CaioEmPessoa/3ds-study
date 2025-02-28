@@ -208,14 +208,14 @@ int main(int argc, char* argv[])
 		// draw objects on BOTTOM
 		slctScreen = 'b';
 		C2D_SceneBegin(bot);
-			drawSquare(-220, -100, sqrSizes[2], sqrSizes[2], setColor); // grande quadrado
-			drawSquare(-220, 0, sqrSizes[1], sqrSizes[1], setColor);    // médio quadrado
-			drawSquare(-220, 100, sqrSizes[0], sqrSizes[0], setColor);  // pequeno quadrado
+			drawSquare(-100+sqrSizes[]/2, -60, sqrSizes[2], sqrSizes[2], setColor); // grande quadrado
+			drawSquare(-100+sqrSizes[1]/2, 0, sqrSizes[1], sqrSizes[1], setColor);    // médio quadrado
+			drawSquare(-100+sqrSizes[2]/2, 60, sqrSizes[0], sqrSizes[0], setColor);  // pequeno quadrado
 
-			drawSquare(0, -100, sqrSize, sqrSize, svdColors[0]);
-			drawSquare(0, -30, sqrSize, sqrSize, svdColors[1]);
-			drawSquare(0, 30, sqrSize, sqrSize, svdColors[2]);
-			drawSquare(0, 100, sqrSize, sqrSize, svdColors[3]);
+			drawSquare(0, -60, sqrSize, sqrSize, 0);
+			drawSquare(0, -20, sqrSize, sqrSize, 1);
+			drawSquare(0, 20, sqrSize, sqrSize, 2);
+			drawSquare(0, 60, sqrSize, sqrSize, 3);
 
 		// end frame
 		C3D_FrameEnd(0);
