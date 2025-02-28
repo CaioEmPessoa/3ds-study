@@ -12,15 +12,14 @@
 #define BOT_SCREEN_WIDTH  320
 #define BOT_SCREEN_HEIGHT 240
 
-<<<<<<< HEAD
+
 static int sqrSizes[3] = {10, 15, 20};
 static int sqrSize;
-=======
+
 // screen that is being drawn on 
 static char slctScreen;
 
 static int sqrSize = 15;
->>>>>>> d78cfe3912c50ef58e8c093c6262c5f21f2ec15e
 
 static int playerX;
 static int playerY;
