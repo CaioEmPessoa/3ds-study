@@ -12,22 +12,33 @@
 #define BOT_SCREEN_WIDTH  320
 #define BOT_SCREEN_HEIGHT 240
 
+<<<<<<< HEAD
 static int sqrSizes[3] = {10, 15, 20};
 static int sqrSize;
+=======
+// screen that is being drawn on 
+static char slctScreen;
+
+static int sqrSize = 15;
+>>>>>>> d78cfe3912c50ef58e8c093c6262c5f21f2ec15e
 
 static int playerX;
 static int playerY;
 
 static int setColor = 2; // current color set of square and color that will be drawn
 
+// for drawing
 static int sqrsAmm = -1;
 static int sqrsInfo[9999][3] = {};
 
 int convertPos(char type, int pos)
 {
-	if (type == 'w') return (TOP_SCREEN_WIDTH/2)+pos;
-	else if (type == 'h') return (TOP_SCREEN_HEIGHT/2)+pos;
-	else return 0; // TODO if screen_heigh <= pos // pos = screen_height
+	if (slctScreen = 't') int w = TOP_SCREEN_HEIGHT, h = TOP_SCREEN_HEIGHT;
+	else if (slctScreen = 'b') int w = BOT_SCREEN_HEIGHT; int h = BOT_SCREEN_HEIGHT;
+
+	if (type == 'w') return (w/2)+pos;
+	else if (type == 'h') return (h/2)+pos;
+	else return 0;
 }
 
 void movePlayer(char nsew)
@@ -125,11 +136,13 @@ u32 svdColors(int cId)
 	return svdColors[cId];
 }
 
+// xy positions for square // width&height of square 
+// color code in list 	  // bool r (unused) if xy are relative to middle or top-left
 void drawSquare(int x, int y, int w, int h, int c)
 {
 	C2D_DrawRectangle(
-		convertPos('w', x), 
-		convertPos('h', y), 
+		convertPos('w', x),
+		convertPos('h', y),
 		0, w, h,
 		svdColors(c), svdColors(c), svdColors(c), svdColors(c)
 	);
@@ -183,6 +196,7 @@ int main(int argc, char* argv[])
 		C2D_TargetClear(bot, clrClear);
 
 		// draw objects ON TOP
+		slctScreen = 't';
 		C2D_SceneBegin(top);
 			// draw saved squares
 			for (int i = 0; i < sqrsAmm - 1; i++)
@@ -195,8 +209,16 @@ int main(int argc, char* argv[])
 			drawSquare(playerX, playerY, sqrSize, sqrSize, setColor);
 		
 		// draw objects on BOTTOM
+		slctScreen = 'b';
 		C2D_SceneBegin(bot);
-			drawSquare(playerX, playerY, sqrSize, sqrSize, setColor);
+			drawSquare(-220, -100, sqrSizes[2], sqrSizes[2], setColor); // grande quadrado
+			drawSquare(-220, 0, sqrSizes[1], sqrSizes[1], setColor);    // médio quadrado
+			drawSquare(-220, 100, sqrSizes[0], sqrSizes[0], setColor);  // pequeno quadrado
+
+			drawSquare(0, -100, sqrSize, sqrSize, svdColors[0]);
+			drawSquare(0, -30, sqrSize, sqrSize, svdColors[1]);
+			drawSquare(0, 30, sqrSize, sqrSize, svdColors[2]);
+			drawSquare(0, 100, sqrSize, sqrSize, svdColors[3]);
 
 		// end frame
 		C3D_FrameEnd(0);
