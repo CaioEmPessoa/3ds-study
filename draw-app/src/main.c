@@ -27,6 +27,14 @@ static int setColor = 2; // current color set of square and color that will be d
 static int sqrsAmm = -1;
 static int sqrsInfo[9999][3] = {};
 
+// screen that is being drawn on
+static char slctScreen;
+
+// touch elements
+static touchPosition touch; // touch coords, touch.px & touch.py
+
+// static int touchEl[4][9999] = {}; // touch elements, the order will be stored on addTouchSquare or smth
+
 int convertPos(char type, int pos)
 {
 	int offset = (slctScreen == 't') ? ((type == 'w') ? TOP_SCREEN_WIDTH / 2 : TOP_SCREEN_HEIGHT / 2) : 
@@ -64,6 +72,15 @@ void addSquare()
 	sqrsInfo[sqrsAmm][1] = playerY; // y position
 	sqrsInfo[sqrsAmm][2] = setColor; // square color
 }
+
+void addSquareTouch(int x, int y)
+{
+	sqrsAmm += 1;
+	sqrsInfo[sqrsAmm][0] = x - BOT_SCREEN_WIDTH / 2;
+	sqrsInfo[sqrsAmm][1] = y  - BOT_SCREEN_HEIGHT / 2;
+	sqrsInfo[sqrsAmm][2] = setColor; // square color
+}
+
 void changeColor(int dir)
 {
 	if (dir == 1 && setColor < 4)
@@ -79,6 +96,17 @@ void eraseAll()
 {
 	sqrsAmm = -1;
 	memset(sqrsInfo, 0, sizeof(sqrsInfo));
+}
+
+int addTouchSquare(int x, int y, int w, int h) // not related to the square drawn
+{
+	
+	return 0;
+}
+
+void checkTouchPos()
+{
+	addSquareTouch(touch.px, touch.py);
 }
 
 void checkFrameKey(char key[]) // check in hold every frame
@@ -106,13 +134,14 @@ void checkFrameKey(char key[]) // check in hold every frame
 		movePlayer('W');
 	}
 	else if(strcmp(key, "KEY_A") == 0) addSquare();
+	else if (strcmp(key, "KEY_TOUCH") == 0) checkTouchPos();
 }
 
 void checkSingleKey(char key[]) // check on diff click
 {
 	if(strcmp(key, "KEY_B") == 0) eraseAll();
 	else if (strcmp(key, "KEY_R") == 0) changeColor(1);
-	else if (strcmp(key, "KEY_L") == 0)changeColor(0);
+	else if (strcmp(key, "KEY_L") == 0) changeColor(0);
 }
 
 // ------------| COLOR VARIABLES |-----------
@@ -151,7 +180,7 @@ int main(int argc, char* argv[])
 	C2D_Prepare();
 	
 	// -------| INITIAL VARIABLES |------
-	sqrSize = sqrSizes[1];
+	sqrSize = sqrSizes[0];
 
 	// INITIAL PLAYER POSITION
 	playerY = sqrSize / 2;
@@ -192,6 +221,18 @@ int main(int argc, char* argv[])
 		// draw objects ON TOP
 		slctScreen = 't';
 		C2D_SceneBegin(top);
+			drawSquare(-100+sqrSizes[0]/2, -60, sqrSizes[2], sqrSizes[2], setColor); // grande quadrado
+			drawSquare(-100+sqrSizes[1]/2, 0, sqrSizes[1], sqrSizes[1], setColor);    // médio quadrado
+			drawSquare(-100+sqrSizes[2]/2, 60, sqrSizes[0], sqrSizes[0], setColor);  // pequeno quadrado
+
+			drawSquare(0, -60, sqrSize, sqrSize, 0);
+			drawSquare(0, -20, sqrSize, sqrSize, 1);
+			drawSquare(0, 20, sqrSize, sqrSize, 2);
+			drawSquare(0, 60, sqrSize, sqrSize, 3);
+		
+		// draw objects on BOTTOM
+		slctScreen = 'b';
+		C2D_SceneBegin(bot);
 			// draw saved squares
 			for (int i = 0; i < sqrsAmm - 1; i++)
 			{
@@ -201,23 +242,13 @@ int main(int argc, char* argv[])
 
 			// draw cursor
 			drawSquare(playerX, playerY, sqrSize, sqrSize, setColor);
-		
-		// draw objects on BOTTOM
-		slctScreen = 'b';
-		C2D_SceneBegin(bot);
-			drawSquare(-100+sqrSizes[]/2, -60, sqrSizes[2], sqrSizes[2], setColor); // grande quadrado
-			drawSquare(-100+sqrSizes[1]/2, 0, sqrSizes[1], sqrSizes[1], setColor);    // médio quadrado
-			drawSquare(-100+sqrSizes[2]/2, 60, sqrSizes[0], sqrSizes[0], setColor);  // pequeno quadrado
-
-			drawSquare(0, -60, sqrSize, sqrSize, 0);
-			drawSquare(0, -20, sqrSize, sqrSize, 1);
-			drawSquare(0, 20, sqrSize, sqrSize, 2);
-			drawSquare(0, 60, sqrSize, sqrSize, 3);
 
 		// end frame
 		C3D_FrameEnd(0);
 
-		//Scan all the inputs.y
+		//Read the touch screen coordinates
+		hidTouchRead(&touch);
+		//Scan all the inputs
 		hidScanInput();
 
 		u32 kDown = hidKeysDown();
