@@ -27,6 +27,8 @@ static int setColor = 2; // current color set of square and color that will be d
 static int sqrsAmm = -1;
 static int sqrsInfo[9999][3] = {};
 
+static bool drawBot = false;
+
 // screen that is being drawn on
 static char slctScreen;
 
@@ -106,7 +108,11 @@ int addTouchSquare(int x, int y, int w, int h) // not related to the square draw
 
 void checkTouchPos()
 {
-	addSquareTouch(touch.px, touch.py);
+	if (drawBot == true) addSquareTouch(touch.px, touch.py);
+	else
+	{
+		// clickable elements on bottom screen
+	}
 }
 
 void checkFrameKey(char key[]) // check in hold every frame
@@ -142,6 +148,7 @@ void checkSingleKey(char key[]) // check on diff click
 	if(strcmp(key, "KEY_B") == 0) eraseAll();
 	else if (strcmp(key, "KEY_R") == 0) changeColor(1);
 	else if (strcmp(key, "KEY_L") == 0) changeColor(0);
+	else if (strcmp(key, "KEY_Y") == 0) drawBot = drawBot ? false : true;
 }
 
 // ------------| COLOR VARIABLES |-----------
@@ -219,8 +226,8 @@ int main(int argc, char* argv[])
 		C2D_TargetClear(bot, clrClear);
 
 		// draw objects ON TOP
-		slctScreen = 't';
-		C2D_SceneBegin(top);
+		slctScreen =  drawBot ? 't' : 'b';
+		C2D_SceneBegin(drawBot ? top : bot);
 			drawSquare(-100+sqrSizes[0]/2, -60, sqrSizes[2], sqrSizes[2], setColor); // grande quadrado
 			drawSquare(-100+sqrSizes[1]/2, 0, sqrSizes[1], sqrSizes[1], setColor);    // médio quadrado
 			drawSquare(-100+sqrSizes[2]/2, 60, sqrSizes[0], sqrSizes[0], setColor);  // pequeno quadrado
@@ -231,8 +238,8 @@ int main(int argc, char* argv[])
 			drawSquare(0, 60, sqrSize, sqrSize, 3);
 		
 		// draw objects on BOTTOM
-		slctScreen = 'b';
-		C2D_SceneBegin(bot);
+		slctScreen =  drawBot ? 'b' : 't';
+		C2D_SceneBegin(drawBot ? bot : top);
 			// draw saved squares
 			for (int i = 0; i < sqrsAmm - 1; i++)
 			{
