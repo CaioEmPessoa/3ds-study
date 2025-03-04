@@ -12,13 +12,10 @@
 #define BOT_SCREEN_WIDTH  320
 #define BOT_SCREEN_HEIGHT 240
 
-
 static int sqrSizes[3] = {10, 15, 20};
 static int sqrSize;
 
-// screen that is being drawn on 
-static char slctScreen;
-
+// player elements
 static int sqrSize = 15;
 
 static int playerX;
@@ -26,7 +23,7 @@ static int playerY;
 
 static int setColor = 2; // current color set of square and color that will be drawn
 
-// for drawing
+// drawing elements
 static int sqrsAmm = -1;
 static int sqrsInfo[9999][3] = {};
 
@@ -80,7 +77,7 @@ void changeColor(int dir)
 }
 void eraseAll()
 {
-	sqrsAmm = 0;
+	sqrsAmm = -1;
 	memset(sqrsInfo, 0, sizeof(sqrsInfo));
 }
 
