@@ -25,7 +25,7 @@ static int setColor = 2; // current color set of square and color that will be d
 
 // drawing elements
 static int sqrsAmm = -1;
-static int sqrsInfo[9999][3] = {};
+static int sqrsInfo[9999][4] = {};
 
 static bool drawBot = false;
 
@@ -35,7 +35,8 @@ static char slctScreen;
 // touch elements
 static touchPosition touch; // touch coords, touch.px & touch.py
 
-// static int touchEl[4][9999] = {}; // touch elements, the order will be stored on addTouchSquare or smth
+// bottom screen touch elements
+static int touchEl[9999][4] = {}; // touch elements, the order will be stored on addTouchSquare or smth
 
 int convertPos(char type, int pos)
 {
@@ -72,7 +73,8 @@ void addSquare()
 	sqrsAmm += 1;
 	sqrsInfo[sqrsAmm][0] = playerX; // x position
 	sqrsInfo[sqrsAmm][1] = playerY; // y position
-	sqrsInfo[sqrsAmm][2] = setColor; // square color
+	sqrsInfo[sqrsAmm][2]= sqrSize; // square size
+	sqrsInfo[sqrsAmm][3] = setColor; // square color
 }
 
 void addSquareTouch(int x, int y)
@@ -80,7 +82,8 @@ void addSquareTouch(int x, int y)
 	sqrsAmm += 1;
 	sqrsInfo[sqrsAmm][0] = x - BOT_SCREEN_WIDTH / 2;
 	sqrsInfo[sqrsAmm][1] = y  - BOT_SCREEN_HEIGHT / 2;
-	sqrsInfo[sqrsAmm][2] = setColor; // square color
+	sqrsInfo[sqrsAmm][2]= sqrSize; // square size
+	sqrsInfo[sqrsAmm][3] = setColor; // square color
 }
 
 void changeColor(int dir)
@@ -100,10 +103,27 @@ void eraseAll()
 	memset(sqrsInfo, 0, sizeof(sqrsInfo));
 }
 
-int addTouchSquare(int x, int y, int w, int h) // not related to the square drawn
+bool checkTouchSquare(int id)
 {
-	
-	return 0;
+	int x0 = touchEl[id][0]; 
+	int x1 = x0 + touchEl[id][2];
+	int y0 = touchEl[id][1];
+	int y1 = y0 + touchEl[id][3];
+
+	int posX = touch.px - BOT_SCREEN_WIDTH / 2;
+	int posY = touch.py - BOT_SCREEN_HEIGHT / 2;
+
+	if ((posX >= x0 && posX <= x1) && (posY >= y0 && posY <= y1)) return true;
+	else return false;
+}
+
+// id being manual is a choice, so that id's have known places on the array, and not 'random' ones
+void addTouchSquare(int x, int y, int w, int h, int id)
+{
+	touchEl[id][0] = x;
+	touchEl[id][1] = y;
+	touchEl[id][2] = w;
+	touchEl[id][3] = h;
 }
 
 void checkTouchPos()
@@ -111,7 +131,16 @@ void checkTouchPos()
 	if (drawBot == true) addSquareTouch(touch.px, touch.py);
 	else
 	{
-		// clickable elements on bottom screen
+		// change sqr size
+		if (checkTouchSquare(0)) sqrSize = sqrSizes[0]; // grande
+		else if (checkTouchSquare(1)) sqrSize = sqrSizes[1]; // médio
+		else if (checkTouchSquare(2)) sqrSize = sqrSizes[2]; // pequeno
+
+		// change colors
+		else if (checkTouchSquare(3)) setColor = 0; // red
+		else if (checkTouchSquare(4)) setColor = 1; // blue
+		else if (checkTouchSquare(5)) setColor = 2; // green
+		else if (checkTouchSquare(6)) setColor = 3; // white
 	}
 }
 
@@ -210,6 +239,8 @@ int main(int argc, char* argv[])
 	
 	// to check if keys are pressed in the next frame
 	u32 kDownOld = 0, kHeldOld = 0;
+	int posXOld = 0;
+	int posYOld = 0;
 
 	// Create screens
 	C3D_RenderTarget* top = C2D_CreateScreenTarget(GFX_TOP, GFX_LEFT);
@@ -224,31 +255,35 @@ int main(int argc, char* argv[])
 		C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
 		C2D_TargetClear(top, clrClear);
 		C2D_TargetClear(bot, clrClear);
-
-		// draw objects ON TOP
-		slctScreen =  drawBot ? 't' : 'b';
-		C2D_SceneBegin(drawBot ? top : bot);
-			drawSquare(-100+sqrSizes[0]/2, -60, sqrSizes[2], sqrSizes[2], setColor); // grande quadrado
-			drawSquare(-100+sqrSizes[1]/2, 0, sqrSizes[1], sqrSizes[1], setColor);    // médio quadrado
-			drawSquare(-100+sqrSizes[2]/2, 60, sqrSizes[0], sqrSizes[0], setColor);  // pequeno quadrado
-
-			drawSquare(0, -60, sqrSize, sqrSize, 0);
-			drawSquare(0, -20, sqrSize, sqrSize, 1);
-			drawSquare(0, 20, sqrSize, sqrSize, 2);
-			drawSquare(0, 60, sqrSize, sqrSize, 3);
 		
-		// draw objects on BOTTOM
+		// Drawing Canvas (mainly top screen)
 		slctScreen =  drawBot ? 'b' : 't';
 		C2D_SceneBegin(drawBot ? bot : top);
 			// draw saved squares
 			for (int i = 0; i < sqrsAmm - 1; i++)
 			{
 				drawSquare(sqrsInfo[i][0], sqrsInfo[i][1], 
-					sqrSize, sqrSize, sqrsInfo[i][2]);
+					sqrsInfo[i][2], sqrsInfo[i][2], sqrsInfo[i][3]);
 			}
 
 			// draw cursor
 			drawSquare(playerX, playerY, sqrSize, sqrSize, setColor);
+
+		// Utilitys Screen (mainly bottom)
+		slctScreen =  drawBot ? 't' : 'b';
+		C2D_SceneBegin(drawBot ? top : bot);
+
+			// Add change square size graphics and hitboxes
+			for (int i = 0; i < 3; i++) {
+				drawSquare(-100 + sqrSizes[i] / 2, -60 + i * 60, sqrSizes[i], sqrSizes[i], setColor);
+				addTouchSquare(-100 + sqrSizes[i] / 2, -60 + i * 60, sqrSizes[i], sqrSizes[i], i); 
+			}
+
+			// add change square color graphics and hitboxes
+			for (int i = 3; i < 7; i++) {
+				drawSquare(0, -60 + (i-3) * 60, sqrSize, sqrSize, i-3);
+				addTouchSquare(0, -60 + (i-3) * 60, sqrSize+5, sqrSize+5, i); // +5 offset
+			}
 
 		// end frame
 		C3D_FrameEnd(0);
@@ -263,7 +298,8 @@ int main(int argc, char* argv[])
 
 		if (kDown & KEY_START) break;
 		
-		if (kDown != kDownOld || kHeld == kHeldOld)
+		if (kDown != kDownOld || kHeld == kHeldOld || 
+			posXOld != touch.px || posYOld != touch.py)
 		{
 			//Clear console
 			consoleClear();
@@ -281,6 +317,8 @@ int main(int argc, char* argv[])
 		//Set keys old values for the next frame
 		kDownOld = kDown;
 		kHeldOld = kHeld;
+		posXOld = touch.px;
+		posYOld = touch.py;
 	}
 
 	// Exit services
