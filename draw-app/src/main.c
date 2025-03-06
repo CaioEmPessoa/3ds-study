@@ -12,12 +12,10 @@
 #define BOT_SCREEN_WIDTH  320
 #define BOT_SCREEN_HEIGHT 240
 
-static int sqrSizes[3] = {10, 15, 20};
+static int sqrSizes[3] = {7, 14, 21};
 static int sqrSize;
 
 // player elements
-static int sqrSize = 15;
-
 static int playerX;
 static int playerY;
 
@@ -25,7 +23,7 @@ static int setColor = 2; // current color set of square and color that will be d
 
 // drawing elements
 static int sqrsAmm = -1;
-static int sqrsInfo[9999][4] = {};
+static int sqrsInfo[999999][4] = {};
 
 static bool drawBot = false;
 
@@ -36,7 +34,7 @@ static char slctScreen;
 static touchPosition touch; // touch coords, touch.px & touch.py
 
 // bottom screen touch elements
-static int touchEl[9999][4] = {}; // touch elements, the order will be stored on addTouchSquare or smth
+static int touchEl[50][4] = {}; // touch elements, the order will be stored on addTouchSquare or smth
 
 int convertPos(char type, int pos)
 {
@@ -80,8 +78,8 @@ void addSquare()
 void addSquareTouch(int x, int y)
 {
 	sqrsAmm += 1;
-	sqrsInfo[sqrsAmm][0] = x - BOT_SCREEN_WIDTH / 2;
-	sqrsInfo[sqrsAmm][1] = y  - BOT_SCREEN_HEIGHT / 2;
+	sqrsInfo[sqrsAmm][0] = x;
+	sqrsInfo[sqrsAmm][1] = y;
 	sqrsInfo[sqrsAmm][2]= sqrSize; // square size
 	sqrsInfo[sqrsAmm][3] = setColor; // square color
 }
@@ -128,7 +126,13 @@ void addTouchSquare(int x, int y, int w, int h, int id)
 
 void checkTouchPos()
 {
-	if (drawBot == true) addSquareTouch(touch.px, touch.py);
+	if (drawBot)
+	{
+		int x = touch.px - BOT_SCREEN_WIDTH / 2;
+		int y = touch.py  - BOT_SCREEN_HEIGHT / 2;
+		addSquareTouch(x, y);
+		playerX = x; playerY = y;
+	}
 	else
 	{
 		// change sqr size
@@ -140,7 +144,12 @@ void checkTouchPos()
 		else if (checkTouchSquare(3)) setColor = 0; // red
 		else if (checkTouchSquare(4)) setColor = 1; // blue
 		else if (checkTouchSquare(5)) setColor = 2; // green
-		else if (checkTouchSquare(6)) setColor = 3; // white
+		else if (checkTouchSquare(6)) setColor = 8; // white
+
+		else if (checkTouchSquare(7)) setColor = 4; // red
+		else if (checkTouchSquare(8)) setColor = 5; // blue
+		else if (checkTouchSquare(9)) setColor = 6; // green
+		else if (checkTouchSquare(10)) setColor = 7; // white
 	}
 }
 
@@ -183,13 +192,18 @@ void checkSingleKey(char key[]) // check on diff click
 // ------------| COLOR VARIABLES |-----------
 u32 svdColors(int cId)
 {
-	u32 clrRed   = C2D_Color32(0xFF, 0x00, 0x00, 0xFF);
-	u32 clrBlue  = C2D_Color32(0x00, 0x00, 0xFF, 0xFF);
-	u32 clrGreen = C2D_Color32(0x00, 0xFF, 0x00, 0xFF);
-	u32 clrWhite = C2D_Color32(0xFF, 0xFF, 0xFF, 0xFF);
-	
-	u32 svdColors[4] = {
-		clrRed, clrBlue, clrGreen, clrWhite
+	u32 clrWhite  = C2D_Color32(0xFF, 0xFF, 0xFF, 0xFF);
+	u32 clrBlack  = C2D_Color32(0x00, 0x00, 0x00, 0xFF);
+	u32 clrRed    = C2D_Color32(0xFF, 0x00, 0x00, 0xFF);
+	u32 clrBlue   = C2D_Color32(0x00, 0x00, 0xFF, 0xFF);
+	u32 clrGreen  = C2D_Color32(0x00, 0xFF, 0x00, 0xFF);
+	u32 clrPink   = C2D_Color32(0xFF, 0xC0, 0xCB, 0xFF);
+	u32 clrOrange = C2D_Color32(0xFF, 0xA5, 0x00, 0xFF);
+	u32 clrPurple = C2D_Color32(0x80, 0x00, 0x80, 0xFF);
+	u32 clrClear = C2D_Color32(0xFF, 0xD8, 0xB0, 0xFF);
+
+	u32 svdColors[9] = {
+		clrRed, clrBlue, clrGreen, clrWhite, clrPink, clrOrange, clrPurple, clrBlack, clrClear
 	};
 
 	return svdColors[cId];
@@ -255,7 +269,33 @@ int main(int argc, char* argv[])
 		C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
 		C2D_TargetClear(top, clrClear);
 		C2D_TargetClear(bot, clrClear);
-		
+
+		// Utilitys Screen (mainly bottom)
+		slctScreen =  drawBot ? 't' : 'b';
+		C2D_SceneBegin(drawBot ? top : bot);
+
+			// Add change square size graphics and hitboxes
+			for (int i = 0; i < 3; i++) {
+				int invI = 2 - i;
+				int sqrX = -100 + sqrSizes[invI] / 2;
+				int sqrY = -60 + i * 60;
+				drawSquare(sqrX-2, sqrY-2, sqrSizes[i], sqrSizes[i], 7);
+				drawSquare(sqrX, sqrY, sqrSizes[i]-4, sqrSizes[i]-4, setColor);
+				addTouchSquare(-100, sqrY, sqrSizes[i], sqrSizes[i], i); 
+			}
+			// add change square color graphics and hitboxes
+			int positions[] = {60, 20, -20, -60};
+			for (int i = 3; i < 7; i++) {
+				int posIndex = (i - 3) % 4;
+				drawSquare(0, positions[posIndex], sqrSize, sqrSize, i-3);
+				addTouchSquare(0, positions[posIndex], sqrSize+5, sqrSize+5, i); // +5 offset
+			}
+			for (int i = 7; i < 11; i++) {
+				int posIndex = (i - 3) % 4;
+				drawSquare(50, positions[posIndex], sqrSize, sqrSize, i-3);
+				addTouchSquare(50-3, positions[posIndex]-3, sqrSize+6, sqrSize+6, i); // +5 offset
+			}
+
 		// Drawing Canvas (mainly top screen)
 		slctScreen =  drawBot ? 'b' : 't';
 		C2D_SceneBegin(drawBot ? bot : top);
@@ -266,24 +306,10 @@ int main(int argc, char* argv[])
 					sqrsInfo[i][2], sqrsInfo[i][2], sqrsInfo[i][3]);
 			}
 
-			// draw cursor
-			drawSquare(playerX, playerY, sqrSize, sqrSize, setColor);
-
-		// Utilitys Screen (mainly bottom)
-		slctScreen =  drawBot ? 't' : 'b';
-		C2D_SceneBegin(drawBot ? top : bot);
-
-			// Add change square size graphics and hitboxes
-			for (int i = 0; i < 3; i++) {
-				drawSquare(-100 + sqrSizes[i] / 2, -60 + i * 60, sqrSizes[i], sqrSizes[i], setColor);
-				addTouchSquare(-100 + sqrSizes[i] / 2, -60 + i * 60, sqrSizes[i], sqrSizes[i], i); 
-			}
-
-			// add change square color graphics and hitboxes
-			for (int i = 3; i < 7; i++) {
-				drawSquare(0, -60 + (i-3) * 60, sqrSize, sqrSize, i-3);
-				addTouchSquare(0, -60 + (i-3) * 60, sqrSize+5, sqrSize+5, i); // +5 offset
-			}
+			// draw cursor corner
+			drawSquare(playerX-2, playerY-2, sqrSize, sqrSize, 7);
+			// draw cursor color
+			drawSquare(playerX, playerY, sqrSize-4, sqrSize-4, setColor);
 
 		// end frame
 		C3D_FrameEnd(0);
