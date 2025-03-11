@@ -75,6 +75,7 @@ void addSquare()
 	sqrsInfo[sqrsAmm][3] = setColor; // square color
 }
 
+// add square by touch
 void addSquareTouch(int x, int y)
 {
 	sqrsAmm += 1;
@@ -253,8 +254,7 @@ int main(int argc, char* argv[])
 	
 	// to check if keys are pressed in the next frame
 	u32 kDownOld = 0, kHeldOld = 0;
-	int posXOld = 0;
-	int posYOld = 0;
+	int posXOld = 0, posYOld = 0;
 
 	// Create screens
 	C3D_RenderTarget* top = C2D_CreateScreenTarget(GFX_TOP, GFX_LEFT);
