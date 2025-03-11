@@ -6,29 +6,39 @@
 #include <stdlib.h>
 #include <3ds.h>
 
-#define SCREEN_WIDTH  400
-#define SCREEN_HEIGHT 240
+#define TOP_SCREEN_WIDTH  400
+#define TOP_SCREEN_HEIGHT 240
 
+#define BOT_SCREEN_WIDTH  320
+#define BOT_SCREEN_HEIGHT 240
+
+// board elements
+static int maxTileX = 5; // set tile boundaries
+static int maxTileY = 5;
+
+// player elements
 static int sqrSize = 20;
 
 static int playerTileX = 0.5; // player positioning, starts on the middle
 static int playerTileY = 0.5;
 
-static int maxTileX = 5; // set tile boundaries
-static int maxTileY = 5;
+static bool cursorBot = false;
 
-static int setColor = 2; // current color set of player and color that will be drawn
+// screen that is being drawn on
+static char slctScreen;
 
-// for drawing
-static int sqrsAmm = -1;
-static int sqrsInfo[9999][3] = {};
+// touch elements
+static touchPosition touch; // touch coords, touch.px & touch.py
 
-// convert nw coords on centered ones (0:0 is not on the upper left, but int the middle)
+// bottom screen touch elements
+static int touchEl[50][4] = {}; // touch elements, the order will be stored on addTouchSquare or smth
+
 int convertPos(char type, int pos)
 {
-	if (type == 'w') return (SCREEN_WIDTH/2)+pos;
-	else if (type == 'h') return (SCREEN_HEIGHT/2)+pos;
-	else return 0; // TODO if screen_heigh <= pos // pos = screen_height
+	int offset = (slctScreen == 't') ? ((type == 'w') ? TOP_SCREEN_WIDTH / 2 : TOP_SCREEN_HEIGHT / 2) : 
+										((type == 'w') ? BOT_SCREEN_WIDTH / 2 : BOT_SCREEN_HEIGHT / 2);
+
+	return offset + pos;
 }
 
 void movePlayer(char nsew)
@@ -54,65 +64,83 @@ void movePlayer(char nsew)
 	default:
 		break;
 	}
-
 }
 
-// DRAWING FUNCTIONS
-void addSquare()
+bool checkTouchSquare(int id)
 {
-	sqrsAmm += 1;
-	sqrsInfo[sqrsAmm][0] = playerTileX*sqrSize; // x position
-	sqrsInfo[sqrsAmm][1] = playerTileY*sqrSize; // y position
-	sqrsInfo[sqrsAmm][2] = setColor; // square color
+	int x0 = touchEl[id][0]; 
+	int x1 = x0 + touchEl[id][2];
+	int y0 = touchEl[id][1];
+	int y1 = y0 + touchEl[id][3];
+
+	int posX = touch.px - BOT_SCREEN_WIDTH / 2;
+	int posY = touch.py - BOT_SCREEN_HEIGHT / 2;
+
+	if ((posX >= x0 && posX <= x1) && (posY >= y0 && posY <= y1)) return true;
+	else return false;
 }
-void changeColor(int dir)
+
+// id being manual is a choice, so that id's have known places on the array, and not 'random' ones
+void addTouchSquare(int x, int y, int w, int h, int id)
 {
-	if (dir == 1 && setColor < 4)
-	{
-		setColor += 1;
-	}
-	else if (dir == 0 && setColor > 0)
-	{
-		setColor -= 1;
-	}
+	touchEl[id][0] = x;
+	touchEl[id][1] = y;
+	touchEl[id][2] = w;
+	touchEl[id][3] = h;
 }
-void eraseAll()
+
+void checkTouchPos()
 {
-	sqrsAmm = 0;
-	memset(sqrsInfo, 0, sizeof(sqrsInfo));
+	if (cursorBot)
+	{ } // other thing to do with touch screen
+	else
+	{ } // utility functions
 }
 
 void checkFrameKey(char key[]) // check in hold every frame
 {
-	printf("\x1b[25;20H%s", key);
+	if (strcmp(key, "KEY_TOUCH") == 0) checkTouchPos();
 }
 
 void checkSingleKey(char key[]) // check on diff click
 {
-	if (strcmp(key, "KEY_DUP") == 0 || strcmp(key, "KEY_CPAD_UP") == 0)
-	{
-		printf("%s\x1b[20;20H", "CIMA");
-		movePlayer('N');
-	}
-	else if (strcmp(key, "KEY_DDOWN") == 0 || strcmp(key, "KEY_CPAD_DOWN") == 0)
-	{
-		printf("%s\x1b[20;20H", "BAIXO");
-		movePlayer('S');
-	}
-	else if (strcmp(key, "KEY_DRIGHT") == 0 || strcmp(key, "KEY_CPAD_RIGHT") == 0)
-	{
-		printf("%s\x1b[20;20H", "DIREITA");
-		movePlayer('E');
-	}
-	else if (strcmp(key, "KEY_DLEFT") == 0 || strcmp(key, "KEY_CPAD_LEFT") == 0)
-	{
-		printf("%s\x1b[20;20H", "ESQUERDA");
-		movePlayer('W');
-	}
-	else if(strcmp(key, "KEY_A") == 0) addSquare();
-	else if(strcmp(key, "KEY_B") == 0) eraseAll();
-	else if (strcmp(key, "KEY_R") == 0) changeColor(1);
-	else if (strcmp(key, "KEY_L") == 0) changeColor(0);
+	if (strcmp(key, "KEY_Y") == 0) cursorBot = cursorBot ? false : true;
+	else if (strcmp(key, "KEY_DUP") == 0 || strcmp(key, "KEY_CPAD_UP") == 0) movePlayer('N');
+	else if (strcmp(key, "KEY_DDOWN") == 0 || strcmp(key, "KEY_CPAD_DOWN") == 0) movePlayer('S');
+	else if (strcmp(key, "KEY_DRIGHT") == 0 || strcmp(key, "KEY_CPAD_RIGHT") == 0) movePlayer('E');
+	else if (strcmp(key, "KEY_DLEFT") == 0 || strcmp(key, "KEY_CPAD_LEFT") == 0) movePlayer('W');
+}
+
+// ------------| COLOR VARIABLES |-----------
+u32 svdColors(int cId)
+{
+	u32 clrWhite  = C2D_Color32(0xFF, 0xFF, 0xFF, 0xFF);
+	u32 clrBlack  = C2D_Color32(0x00, 0x00, 0x00, 0xFF);
+	u32 clrRed    = C2D_Color32(0xFF, 0x00, 0x00, 0xFF);
+	u32 clrBlue   = C2D_Color32(0x00, 0x00, 0xFF, 0xFF);
+	u32 clrGreen  = C2D_Color32(0x00, 0xFF, 0x00, 0xFF);
+	u32 clrPink   = C2D_Color32(0xFF, 0xC0, 0xCB, 0xFF);
+	u32 clrOrange = C2D_Color32(0xFF, 0xA5, 0x00, 0xFF);
+	u32 clrPurple = C2D_Color32(0x80, 0x00, 0x80, 0xFF);
+	u32 clrClear = C2D_Color32(0xFF, 0xD8, 0xB0, 0xFF);
+
+	u32 svdColors[9] = {
+		clrRed, clrBlue, clrGreen, clrWhite, clrPink, clrOrange, clrPurple, clrBlack, clrClear
+	};
+
+	return svdColors[cId];
+}
+
+// xy positions for square // width&height of square 
+// color code in list 	  // bool r (unused) if xy are relative to middle or top-left
+void drawSquare(int x, int y, int w, int h, int c)
+{
+	C2D_DrawRectangle(
+		convertPos('w', x),
+		convertPos('h', y),
+		0, w, h,
+		svdColors(c), svdColors(c), svdColors(c), svdColors(c)
+	);
 }
 
 int main(int argc, char* argv[]) 
@@ -122,16 +150,14 @@ int main(int argc, char* argv[])
 	gfxInitDefault();
 	C2D_Init(C2D_DEFAULT_MAX_OBJECTS);
 	C2D_Prepare();
-	consoleInit(GFX_BOTTOM, NULL);
 	
-	// INITIAL VARIABLES VALUES
+	// -------| INITIAL VARIABLES |------
 
+	// BACKGROUND POSITION
 	int backgroundSizeX = (maxTileX*sqrSize)*2;
 	int backgroundSizeY = (maxTileY*sqrSize)*2;
 
-	// Create screens
-	C3D_RenderTarget* top = C2D_CreateScreenTarget(GFX_TOP, GFX_LEFT);
-
+	// ARRAY WITH ALL KEY
 	char keysNames[32][32] = {
 		"KEY_A", "KEY_B", "KEY_SELECT", "KEY_START",
 		"KEY_DRIGHT", "KEY_DLEFT", "KEY_DUP", "KEY_DDOWN",
@@ -143,19 +169,18 @@ int main(int argc, char* argv[])
 		"KEY_CPAD_RIGHT", "KEY_CPAD_LEFT", "KEY_CPAD_UP", "KEY_CPAD_DOWN"
 	};
 
-	u32 clrRed   = C2D_Color32(0xFF, 0x00, 0x00, 0xFF);
-	u32 clrBlue  = C2D_Color32(0x00, 0x00, 0xFF, 0xFF);
-	u32 clrGreen = C2D_Color32(0x00, 0xFF, 0x00, 0xFF);
-	u32 clrWhite = C2D_Color32(0xFF, 0xFF, 0xFF, 0xFF);
+	// BACKGROUND COLOR
 	u32 clrClear = C2D_Color32(0xFF, 0xD8, 0xB0, 0x68);
-
-	u32 svdColors[4] = {
-		clrRed, clrBlue, clrGreen, clrWhite
-	};
-
+	
+	// to check if keys are pressed in the next frame
 	u32 kDownOld = 0, kHeldOld = 0;
+	int posXOld = 0, posYOld = 0;
 
-	printf("\x1b[1;1HPress Start to exit.");
+	// Create screens
+	C3D_RenderTarget* top = C2D_CreateScreenTarget(GFX_TOP, GFX_LEFT);
+	C3D_RenderTarget* bot = C2D_CreateScreenTarget(GFX_BOTTOM, GFX_LEFT);
+
+	// printf("\x1b[1;1HPress Start to exit.");
 
 	// Main loop
 	while (aptMainLoop())
@@ -163,54 +188,40 @@ int main(int argc, char* argv[])
 		// Render the scene
 		C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
 		C2D_TargetClear(top, clrClear);
-		C2D_SceneBegin(top);
+		C2D_TargetClear(bot, clrClear);
 
-		// draw objects
-		C2D_DrawTriangle(50 / 2, SCREEN_HEIGHT - 50, svdColors[3],
-			0,  SCREEN_HEIGHT, clrWhite,
-			50, SCREEN_HEIGHT, clrWhite, 0
-		);
+		// Utilitys Screen (mainly bottom)
+		slctScreen =  cursorBot ? 't' : 'b';
+		C2D_SceneBegin(cursorBot ? top : bot);
 
-		// draw tile background
-		C2D_DrawRectangle(
-			convertPos('w', -backgroundSizeX*0.5),
-			convertPos('h', -backgroundSizeY*0.5),
-			0, backgroundSizeX, backgroundSizeY,
-			clrRed, clrRed, clrRed, clrRed
-		);
+			// for (int i = 7; i < 11; i++) {
+			// 	int posIndex = (i - 3) % 4;
+			// 	drawSquare(50, positions[posIndex], sqrSize, sqrSize, i-3);
+			// 	addTouchSquare(50-3, positions[posIndex]-3, sqrSize+6, sqrSize+6, i); // +5 offset
+			// }
 
-		// draw saved squares
-		for (int i = 0; i < sqrsAmm - 1; i++)
-		{
-			C2D_DrawRectangle(
-				convertPos('w', sqrsInfo[i][0]),
-				convertPos('h', sqrsInfo[i][1]),
-				0, sqrSize, sqrSize,
-				svdColors[sqrsInfo[i][2]], svdColors[sqrsInfo[i][2]], // colors
-				svdColors[sqrsInfo[i][2]], svdColors[sqrsInfo[i][2]]
-			);
-		}
+		// Drawing Canvas (mainly top screen)
+		slctScreen =  cursorBot ? 'b' : 't';
+		C2D_SceneBegin(cursorBot ? bot : top);
 
-		// draw cursor
-		C2D_DrawRectangle(
-			convertPos('w', playerTileX*sqrSize),
-			convertPos('h', playerTileY*sqrSize),
-			0, sqrSize, sqrSize, 
-			svdColors[setColor], svdColors[setColor], svdColors[setColor], svdColors[setColor]
-		);
+			drawSquare(-backgroundSizeX*0.5, -backgroundSizeY*0.5, backgroundSizeX, backgroundSizeY, 5);
+
+			drawSquare(playerTileX*sqrSize, playerTileY*sqrSize, sqrSize, sqrSize, 6);
 
 		// end frame
 		C3D_FrameEnd(0);
 
-		//Scan all the inputs.y
+		//Read the touch screen coordinates
+		hidTouchRead(&touch);
+		//Scan all the inputs
 		hidScanInput();
 
-		u32 kDown = hidKeysDown();
-		u32 kHeld = hidKeysHeld();
+		u32 kDown = hidKeysDown(), kHeld = hidKeysHeld();
 
 		if (kDown & KEY_START) break;
 		
-		if (kDown != kDownOld || kHeld == kHeldOld)
+		if (kDown != kDownOld || kHeld == kHeldOld || 
+			posXOld != touch.px || posYOld != touch.py)
 		{
 			//Clear console
 			consoleClear();
@@ -228,6 +239,8 @@ int main(int argc, char* argv[])
 		//Set keys old values for the next frame
 		kDownOld = kDown;
 		kHeldOld = kHeld;
+		posXOld = touch.px;
+		posYOld = touch.py;
 	}
 
 	// Exit services
