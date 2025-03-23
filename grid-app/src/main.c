@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <3ds.h>
 
+#include "cards.h"
+
 #define TOP_SCREEN_WIDTH  400
 #define TOP_SCREEN_HEIGHT 240
 
@@ -13,11 +15,11 @@
 #define BOT_SCREEN_HEIGHT 240
 
 // board elements
-static int maxTileX = 5; // set tile boundaries
-static int maxTileY = 5;
+static int maxTileX = 10; // set tile boundaries
+static int maxTileY = 10;
 
 // player elements
-static int sqrSize = 20;
+static int sqrSize = 5;
 
 static int playerTileX = 0.5; // player positioning, starts on the middle
 static int playerTileY = 0.5;
@@ -190,15 +192,26 @@ int main(int argc, char* argv[])
 		C2D_TargetClear(top, clrClear);
 		C2D_TargetClear(bot, clrClear);
 
-		// Utilitys Screen (mainly bottom)
+		// Utilities Screen (mainly bottom)
 		slctScreen =  cursorBot ? 't' : 'b';
 		C2D_SceneBegin(cursorBot ? top : bot);
+		
+		int startPosition = 1;
+		for (int i = 0; i < cardsAmmt; i++) {
+			int inkPos[18] = {0};
+			memcpy ( inkPos, cardsInk[i], 18 );
 
-			// for (int i = 7; i < 11; i++) {
-			// 	int posIndex = (i - 3) % 4;
-			// 	drawSquare(50, positions[posIndex], sqrSize, sqrSize, i-3);
-			// 	addTouchSquare(50-3, positions[posIndex]-3, sqrSize+6, sqrSize+6, i); // +5 offset
-			// }
+			int cardInfo[3] = {cardsInfo[i][0], cardsInfo[i][1], cardsInfo[i][2]};
+
+			int inkWidth = cardInfo[0]; 
+			int inkAmmt = cardInfo[2]; 
+
+			for (int j = 0; j < inkAmmt; j++) {
+				drawSquare(startPosition*(inkPos[j]/inkWidth), startPosition*(inkPos[j]%inkWidth), 
+						   sqrSize, sqrSize, 6);
+			}
+			startPosition++;
+		}
 
 		// Drawing Canvas (mainly top screen)
 		slctScreen =  cursorBot ? 'b' : 't';
