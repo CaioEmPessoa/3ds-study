@@ -18,8 +18,8 @@
 static int maxTileX = 10; // set tile boundaries
 static int maxTileY = 10;
 
-// player elements
-static int sqrSize = 5;
+static int topSqrSize = 10; // top screen sqr size
+static int btnSqrSize = 10; // bottom screen sqr size
 
 static int playerTileX = 0.5; // player positioning, starts on the middle
 static int playerTileY = 0.5;
@@ -156,8 +156,8 @@ int main(int argc, char* argv[])
 	// -------| INITIAL VARIABLES |------
 
 	// BACKGROUND POSITION
-	int backgroundSizeX = (maxTileX*sqrSize)*2;
-	int backgroundSizeY = (maxTileY*sqrSize)*2;
+	int backgroundSizeX = (maxTileX*topSqrSize)*2;
+	int backgroundSizeY = (maxTileY*topSqrSize)*2;
 
 	// ARRAY WITH ALL KEY
 	char keysNames[32][32] = {
@@ -195,23 +195,26 @@ int main(int argc, char* argv[])
 		// Utilities Screen (mainly bottom)
 		slctScreen =  cursorBot ? 't' : 'b';
 		C2D_SceneBegin(cursorBot ? top : bot);
-		
-		int startPosition = 1;
-		for (int i = 0; i < cardsAmmt; i++) {
-			int inkPos[18] = {0};
-			memcpy ( inkPos, cardsInk[i], 18 );
 
-			int cardInfo[3] = {cardsInfo[i][0], cardsInfo[i][1], cardsInfo[i][2]};
+         int startX = -15;
+         int startY = -10;
+         for (int i = 0; i < cardsAmmt; i++) {
 
-			int inkWidth = cardInfo[0]; 
-			int inkAmmt = cardInfo[2]; 
+            Card card = cards[i];
 
-			for (int j = 0; j < inkAmmt; j++) {
-				drawSquare(startPosition*(inkPos[j]/inkWidth), startPosition*(inkPos[j]%inkWidth), 
-						   sqrSize, sqrSize, 6);
-			}
-			startPosition++;
-		}
+            for (int j = 0; j < card.inkAmount; j++) {
+               int color = card.inkdSqrs[j] == card.special ? 5 : 6; // special point place
+
+               int inkTileX = startX+(card.inkdSqrs[j]%card.width);
+               int inkTileY = startY+card.inkdSqrs[j]/card.width;
+
+               drawSquare(inkTileX*btnSqrSize, inkTileY*btnSqrSize, 
+                           btnSqrSize, btnSqrSize, color);
+            }
+            
+            startX += card.width+1;
+            if (startX >= 15) { startX = -10; startY += 5;}
+         }
 
 		// Drawing Canvas (mainly top screen)
 		slctScreen =  cursorBot ? 'b' : 't';
@@ -219,7 +222,7 @@ int main(int argc, char* argv[])
 
 			drawSquare(-backgroundSizeX*0.5, -backgroundSizeY*0.5, backgroundSizeX, backgroundSizeY, 5);
 
-			drawSquare(playerTileX*sqrSize, playerTileY*sqrSize, sqrSize, sqrSize, 6);
+			drawSquare(playerTileX*topSqrSize, playerTileY*topSqrSize, topSqrSize, topSqrSize, 6);
 
 		// end frame
 		C3D_FrameEnd(0);
