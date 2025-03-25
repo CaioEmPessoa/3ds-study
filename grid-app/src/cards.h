@@ -1,18 +1,29 @@
+typedef struct {
+   int width;
+   int specialPointLocation;
+   int inkAmount;
+   int inkedSquares[18];
+   char name[30];
+   char imgLocation[30];
+} Card;
 
-// convert this all to struct?
 static int cardsAmmt = 2;
 
-static int cardsInfo[102][3] = {
-   {2, 1, 2},  // card width / special point location / ammount of ink
-   {1, 0, 1}
+static Card cards[102] = {
+   {
+      .width = 2,
+      .specialPointLocation = 1,
+      .inkAmount = 2,
+      .inkedSquares = {1, 2},
+      .name = "Tentatek",
+      .imgLocation = "Tentatek.png"
+   },
+   {
+      .width = 1,
+      .specialPointLocation = 0,
+      .inkAmount = 1,
+      .inkedSquares = {0},
+      .name = "Burst Bomb",
+      .imgLocation = "Burst Bomb.png"
+   }
 };
-
-static int cardsInk[102][18] = {
-   {1, 2}, // inked squares, see the original card for reference
-   {0}
-};
-
-char cardsStyle[102][2][30] = {
-   {"Tentatek", "Tentatek.png"}, // name, img location
-   {"Burst Bomb", "Burst Bomb.png"}
-}; 
