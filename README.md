@@ -1,5 +1,5 @@
-# 3ds-study
-A study project for learning how to develop apps and games for the Nintendo 3DS using C. The goal is to gain experience with 3DS development and eventually create full games. Once I’m confident, I will separate the game-specific projects into a different repository.
+# 3ds-draw-app
+A study project for learning how to develop apps and games for the Nintendo 3DS using C. The goal is to gain experience with 3DS development and eventually create full games.
 
 ## SETUP:
 It was a bit challenging to set up the development environment on my personal computer, but it worked well on all other devices I tried. If you need help, I followed [this tutorial](https://gbatemp.net/attachments/nintendo-3ds-homebrewing-getting-started-guide-2-1-pdf.482875/) to finish the installation on my computer, and everything worked well after that.
